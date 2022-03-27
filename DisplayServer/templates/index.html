@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+       integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+       crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+       integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+       crossorigin=""></script>
+
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+
+    <title>Rocket attacks on Israel, Live!</title>
+</head>
+<body>
+  <div id="mapid" style="height:960px"></div>
+    <script>
+        function deltas() {
+        for(var i = 0; i < MarkLayer.length; i++){
+            mymap.removeLayer(MarkLayer[i]);
+            }
+        for(var i = 0; i < LineLayer.length; i++){
+            mymap.removeLayer(LineLayer[i]);
+            }
+        }
+        var mymap = L.map('mapid',{fullscreenControl:true}).setView([31.4117257, 35.0818155], 8);
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/dark-v10',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: '' //MapBox Access Token
+    }).addTo(mymap);
+
+        L.easyButton('<span class="cross">&cross;</span>', function(){
+            deltas();
+        }).addTo(mymap);
+    MarkLayer = [];
+    LineLayer = [];
+
+
+    var source = new EventSource('/topic/rocket');
+    source.addEventListener('message',function(e){
+
+        console.log('Message');
+        obj = JSON.parse(e.data);
+        console.log(obj);
+        if(obj.type = 'ADD'){
+            markerD = L.marker([obj.latitude, obj.longitude],{title:obj.Name, alt:obj.timestamp}).addTo(mymap).bindPopup("<b>"+obj.Name+"</b>"+"<br>"+obj.timestamp);
+            MarkLayer.push(markerD);
+            LineD = L.polyline([[31.416665, 34.333332],[obj.latitude, obj.longitude]]).addTo(mymap);
+            LineLayer.push(LineD)
+        }
+    }, false);
+
+    </script>
+</body>
+</html>
